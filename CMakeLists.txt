@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.16)
+project(SugarbabyLife2 CXX C)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# SDL2: built from source next to the game on Android; a prebuilt copy on desktop
+if(ANDROID)
+  add_subdirectory(${SDL2_SOURCE_DIR} SDL2-build)
+  set(SDL_LIBS SDL2::SDL2 SDL2::SDL2main)
+else()
+  find_package(SDL2 REQUIRED CONFIG)
+  set(SDL_LIBS SDL2::SDL2-static)
+endif()
+
+file(GLOB GAME_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/game/*.cpp)
+set(PLATFORM_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/platform.cpp)
+
+if(ANDROID)
+  add_library(main SHARED ${GAME_SRC} ${PLATFORM_SRC})
+  target_link_libraries(main PRIVATE ${SDL_LIBS} android log GLESv2 m)
+  set(GAME main)
+else()
+  add_executable(sbl2 ${GAME_SRC} ${PLATFORM_SRC})
+  target_link_libraries(sbl2 PRIVATE ${SDL_LIBS} m)
+  set(GAME sbl2)
+endif()
+
+target_include_directories(${GAME} PRIVATE src/platform src/game)
+target_compile_definitions(${GAME} PRIVATE SBL2_CAST SBL2_RGCUBE)
+target_compile_options(${GAME} PRIVATE -O2 -w -fno-strict-aliasing)
+# the game's own main() becomes sbl2_main(); the platform layer starts SDL and then calls it
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/game/main.cpp PROPERTIES COMPILE_DEFINITIONS "main=sbl2_main")

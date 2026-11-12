@@ -1,0 +1,44 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace "com.sugarbaby.life2"
+    compileSdkVersion 34
+    ndkVersion "26.3.11579264"
+    defaultConfig {
+        applicationId "com.sugarbaby.life2"
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0-rgcube"
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_static", "-DSDL2_SOURCE_DIR=" + rootProject.projectDir.absolutePath + "/../deps/SDL2", "-DCMAKE_BUILD_TYPE=Release"
+                abiFilters 'arm64-v8a', 'armeabi-v7a'
+            }
+        }
+    }
+    signingConfigs {
+        // one fixed key in the repo so every new APK installs over the old one (your save stays)
+        rel {
+            storeFile file("sugarbaby.keystore")
+            storePassword "sugarbaby"
+            keyAlias "sugarbaby"
+            keyPassword "sugarbaby"
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.rel
+        }
+        debug { signingConfig signingConfigs.rel }
+    }
+    externalNativeBuild {
+        cmake {
+            path "../../CMakeLists.txt"
+            version "3.22.1"
+        }
+    }
+    sourceSets.main.assets.srcDirs = ['../../assets']
+    lint { abortOnError false }
+}
