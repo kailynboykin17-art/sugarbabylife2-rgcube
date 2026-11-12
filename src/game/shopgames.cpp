@@ -76,7 +76,7 @@ void startGrocery() {
     static const GItem POOL[] = {{"Eggs", 4, true}, {"Milk", 4, true}, {"Bread", 3, true}, {"Rice", 5, true}, {"Chicken", 9, true}, {"Apples", 4, true},
                                  {"Fancy Eggs", 9, true}, {"Oat Milk", 7, true}, {"Name-Brand Cereal", 8, false}, {"Gummy Bears", 3, false}, {"Lobster", 25, false}, {"Cake", 12, false}};
     shelf.assign(POOL, POOL + 12);
-    std::random_shuffle(shelf.begin(), shelf.end(), [](int n) { return irand(n); });
+    for (int i = (int)shelf.size() - 1; i > 0; i--) std::swap(shelf[i], shelf[irand(i + 1)]);   // shuffle
     inCart.assign(12, false); budget = 30;
     prompt = "List: Eggs, Milk, Bread, Rice, Chicken, Apples"; sub = "Budget $30. Fancy versions count but cost more!";
 }
