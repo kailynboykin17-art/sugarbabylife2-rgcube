@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include "citro2d.h"
 #include "fontw.h"
+#include "xbr.h"
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
@@ -36,7 +37,7 @@ static std::vector<TexImpl*> g_texs;
 u32* gpuCmdBuf = nullptr; u32 gpuCmdBufOffset = 0, gpuCmdBufSize = 1u << 30;
 
 bool g_keepPixels = false;   // true = the chunky 3DS pixel look
-// Pixel-art smoothing (EPX / Scale2x): doubles the size and rounds off stair-step edges.
+// (older, simpler smoother - kept for reference; xbr.h is used)
 static std::vector<u32> epx(const std::vector<u32>& a, int w, int h) {
     std::vector<u32> o((size_t)w * h * 4);
     auto P = [&](int x, int y) { x = std::clamp(x, 0, w - 1); y = std::clamp(y, 0, h - 1); return a[(size_t)y * w + x]; };
@@ -72,9 +73,12 @@ static void uploadTex(TexImpl* t) {
         uint8_t* d = &px[((size_t)y * t->w + x) * 4];
         d[0] = v >> 24; d[1] = v >> 16; d[2] = v >> 8; d[3] = v;
     }
+#ifndef __ANDROID__
+    if (t->nearest && getenv("SBL2_DUMPTEX")) { static int n = 0; char fn[64]; snprintf(fn, sizeof fn, "tex_%03d_%dx%d.rgba", n++, t->w, t->h); if (FILE* f = fopen(fn, "wb")) { fwrite(px.data(), 1, px.size(), f); fclose(f); } }
+#endif
     if (smooth) {
         std::vector<u32> a((size_t)t->w * t->h); memcpy(a.data(), px.data(), a.size() * 4);
-        std::vector<u32> b = epx(a, t->w, t->h), c = epx(b, t->w * 2, t->h * 2);
+        std::vector<u32> c = xbr::scale4(a, t->w, t->h);
         SDL_UpdateTexture(t->st, nullptr, c.data(), t->w * 4 * 4);
     } else SDL_UpdateTexture(t->st, nullptr, px.data(), t->w * 4);
     t->dirty = false;

@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # SDL2: built from source next to the game on Android; a prebuilt copy on desktop
 if(ANDROID)
+  if(NOT SDL2_SOURCE_DIR)
+    set(SDL2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/SDL2)
+  endif()
+  set(SDL_TEST OFF CACHE BOOL "" FORCE)
   add_subdirectory(${SDL2_SOURCE_DIR} SDL2-build)
   set(SDL_LIBS SDL2::SDL2 SDL2::SDL2main)
 else()

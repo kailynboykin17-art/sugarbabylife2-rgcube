@@ -11,9 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get SDL2
-        run: git clone --depth 1 -b release-2.30.9 https://github.com/libsdl-org/SDL.git deps/SDL2
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
